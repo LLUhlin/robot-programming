@@ -26,7 +26,7 @@ npm install
 ## Running the Application
 Run the application using Node.js:
 
-node src/index.js
+npm start
 
 ## Running Tests
 Run the tests using Jest:

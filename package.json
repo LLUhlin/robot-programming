@@ -4,7 +4,8 @@
   "description": "A Node.js application to control a robot within a defined room. (Robot Programming Assignment)",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "Ludwig Lyckeholm Uhlin",
