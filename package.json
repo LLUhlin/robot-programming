@@ -1,0 +1,15 @@
+{
+  "name": "robot-programming",
+  "version": "1.0.0",
+  "description": "A Node.js application to control a robot within a defined room. (Robot Programming Assignment)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "Ludwig Lyckeholm Uhlin",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
