@@ -12,7 +12,7 @@ const isValidDimension = (value, dimensionName) => {
 
     // Should never fire but includes if dimensionName is adjusted or CONSTRAINTS object is not up to date.
     if (!CONSTRAINTS[dimensionName]) {
-        throw Error('Invalid dimension, exiting the program.');
+        throw new Error('Invalid dimension, exiting the program.');
     }
 
     const parseInputAsInteger = parseInt(value);
@@ -105,6 +105,8 @@ const confirmDimensions = async (width, height) => {
 
 module.exports = {
     isValidDimension,
+    validateAndConfirmValue,
+
     getRoomDimensions,
     confirmDimensions,
 };

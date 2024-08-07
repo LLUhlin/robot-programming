@@ -37,7 +37,9 @@ const writeMessageToConsole = (outputs, type = 'default') => {
         }
     } else if (typeof(outputs) === 'string') {
         console.log(CONSOLE_COLOURS[type] ?? CONSOLE_COLOURS.default, outputs, "\x1b[0m");
-    } 
+    } else {
+        console.log(CONSOLE_COLOURS.error, `Unexpected outputs: ${outputs}`, "\x1b[0m");
+    }
 }
 
 module.exports = {

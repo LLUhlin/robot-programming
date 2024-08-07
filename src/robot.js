@@ -55,7 +55,7 @@ const validateOrientation = (orientation) => {
  * @param {(string|numeric)} value - Input as a string or numeric. 
  * @param {numeric} max - Max value of constraints.
  * @param {string} axis - String value of the axis that is being confirmed.
- * @returns {Promise<numeric>} - Returns a numeric value of the position.
+ * @returns {Promise<numeric>} - Returns a numeric value of the value.
  */
 const validateAndConfirmStartPosition = async (value, max, axis) => {
     let validStart = validatePosition(value, max, axis);
@@ -110,5 +110,11 @@ const getRobotPosition = async (room) => {
 };
 
 module.exports = {
-    getRobotPosition
+    validatePosition,
+    validateOrientation,
+    validateAndConfirmStartPosition,
+    validateAndConfirmStartOrientation,
+
+    getRobotPosition,
+
 }
