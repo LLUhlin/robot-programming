@@ -1,6 +1,6 @@
 const { getRobotPosition } = require('./robot');
 const { getRoomDimensions } = require('./room');
-const { rl } = require('./utils');
+const { rl, writeMessageToConsole } = require('./utils');
 
 
 const main = async () => {
@@ -15,7 +15,7 @@ const main = async () => {
         const { startX, startY, startOrientation } = await getRobotPosition(room);
 
     } catch (error) {
-        console.log(error.message);
+        writeMessageToConsole(error.message, 'error');
     } finally {
         rl.close();
     }

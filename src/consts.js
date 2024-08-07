@@ -24,7 +24,7 @@ const ORIENTATION = {
     W: true
 }
 
-export default {
+module.exports = {
     CONSTRAINTS,
     CONFIRM_INPUT,
     ORIENTATION

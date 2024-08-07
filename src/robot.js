@@ -1,10 +1,10 @@
-const { getInput } = require('./utils');
-const { ORIENTATION } = require('./consts').default;
+const { getInput, writeMessageToConsole } = require('./utils');
+const { ORIENTATION } = require('./consts');
 
 /**
  * Validate the postition input.
  * 
- * @param {string|numeric} value - Input as a string or numeric, converts into a numeric for comparision, must be a round number. 
+ * @param {(string|numeric)} value - Input as a string or numeric, converts into a numeric for comparision, must be a round number. 
  * @param {numeric} max - Constraint of the room in one axis, value must be less than this. 
  * @param {string} axis - Axis that is being validated, writes out the axis if invalid input. 
  * @returns {boolean} - Returns true or false depending on sucessful validation.
@@ -23,8 +23,10 @@ const validatePosition = (value, max, axis) => {
         parseInputAsInteger < 0 ||
         parseInputAsInteger > max
     ) {
-        console.log(`"${value}" is not a valid starting position on the ${axis}-axis`);
-        console.log(`must be a round number between 0 and ${max}`);
+        writeMessageToConsole([
+            `"${value}" is not a valid starting position on the ${axis}-axis`,
+            `must be a round number between 0 and ${max}`
+        ], 'error');
         return false;
     }
     return true;
@@ -39,7 +41,7 @@ const validatePosition = (value, max, axis) => {
 const validateOrientation = (orientation) => {
     if (!orientation || !ORIENTATION[orientation.toUpperCase()]) {
         if (orientation) {
-            console.log(`"${orientation}" is not a valid orientation.`);
+            writeMessageToConsole(`"${orientation}" is not a valid orientation.`, 'error');
         }
         return false;
     }
@@ -50,7 +52,7 @@ const validateOrientation = (orientation) => {
  * Validating and let's user re-confirm starting position on the given axis until valid input.
  * 
  * @async
- * @param {string|numeric} value - Input as a string or numeric. 
+ * @param {(string|numeric)} value - Input as a string or numeric. 
  * @param {numeric} max - Max value of constraints.
  * @param {string} axis - String value of the axis that is being confirmed.
  * @returns {Promise<numeric>} - Returns a numeric value of the position.

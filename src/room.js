@@ -1,27 +1,10 @@
-const { getInput } = require('./utils');
-
-// MIN and MAX value constraints.
-const MIN_WIDTH = 2;
-const MIN_HEIGHT = 2;
-const MAX_WIDTH = 20;
-const MAX_HEIGHT = 20;
-
-// Constraints collection for MIN and MAX values, restricts dimensions to be used.
-const CONSTRAINTS = {
-    width: { min: MIN_WIDTH, max: MAX_WIDTH },
-    height: { min: MIN_HEIGHT, max: MAX_HEIGHT }
-};
-
-// Confirmation input constant to avoid comparing strings.
-const CONFIRM_INPUT = {
-    Y: true,
-    N: false
-};
+const { getInput, writeMessageToConsole } = require('./utils');
+const { CONSTRAINTS, CONFIRM_INPUT } = require('./consts');
 
 /**
  * Validate the dimension input.
  * 
- * @param {string|numeric} value - Input as a string or numeric, converts into a numeric for comparision, must be a round number.
+ * @param {(string|numeric)} value - Input as a string or numeric, converts into a numeric for comparision, must be a round number.
  * @param {string} dimensionName - Name of dimension to be validated, must be existing in CONSTRAINTS in order to run.
  * @returns {boolean} - Returns true or false depending on successful validation.
  */
@@ -33,24 +16,42 @@ const isValidDimension = (value, dimensionName) => {
     }
 
     const parseInputAsInteger = parseInt(value);
-    const parseInputAsFloat = parseFloat(value);
 
     if (
         isNaN(parseInputAsInteger) ||
-        parseInputAsInteger !== parseInputAsFloat ||
+        !Number.isInteger(Number(value)) ||
         parseInputAsInteger < CONSTRAINTS[dimensionName].min ||
         parseInputAsInteger > CONSTRAINTS[dimensionName].max
     ) {
         if (!value) {
-            console.log(`Must provide a ${dimensionName}.`);
+            writeMessageToConsole(`Must provide a ${dimensionName}.`, 'error');
         } else {
-            console.log(`"${value}" is not a valid ${dimensionName},`);
-            console.log(`must be a round number between ${CONSTRAINTS[dimensionName].min} and ${CONSTRAINTS[dimensionName].max}.`);
+            writeMessageToConsole([
+                `"${value}" is not a valid ${dimensionName},`,
+                `must be a round number between ${CONSTRAINTS[dimensionName].min} and ${CONSTRAINTS[dimensionName].max}.`
+            ], 'error');
         }
 
         return false;
     }
     return true;
+};
+
+/**
+ * Validating and confirming value for dimensions until valid input.
+ * 
+ * @async
+ * @param {(string|numeric)} value - Input as a string or numeric. 
+ * @param {string} dimension - String value of the dimension that is being confirmed.
+ * @returns {Promise<numeric>} - Returns a numeric value of the dimension.
+ */
+const validateAndConfirmValue = async (value, dimension) => {
+    let validDimensionValue = isValidDimension(value, dimension);
+    while (!validDimensionValue) {
+        value = await getInput(`Enter ${dimension}: `);
+        validDimensionValue = isValidDimension(value, dimension);
+    }
+    return Number(value);
 };
 
 /**
@@ -66,22 +67,16 @@ const getRoomDimensions = async () => {
     let width, height, dimensionBlockComplete = false;
 
     while (!dimensionBlockComplete) {
-
-        console.log('');
-
         const roomSize = await getInput('Enter room dimensions (width height): ');
         [width, height] = roomSize.split(' ').filter(e => e);
 
-        if (
-            !isValidDimension(width, 'width') ||
-            !isValidDimension(height, 'height')
-        ) {
-            console.log('Try again.');
-        } else {
-            dimensionBlockComplete = await confirmDimensions(Number(width), Number(height));
-        }
+        width = await validateAndConfirmValue(width, 'width');
+        height = await validateAndConfirmValue(height, 'height');
+
+        dimensionBlockComplete = await confirmDimensions(width, height);
     }
-    return { width: Number(width), height: Number(height) };
+
+    return { width, height };
 };
 
 /**
@@ -95,7 +90,7 @@ const getRoomDimensions = async () => {
  */
 const confirmDimensions = async (width, height) => {
 
-    console.log(`Width: ${width}, Height: ${height}`);
+    writeMessageToConsole(`Width: ${width}, Height: ${height}`, 'success');
 
     while (true) {
         const confirmSize = await getInput('Confirm room dimensions (Y / N): ');
@@ -103,7 +98,7 @@ const confirmDimensions = async (width, height) => {
         if (CONFIRM_INPUT[confirmation] !== undefined) {
             return CONFIRM_INPUT[confirmation];
         } else {
-            console.log('Please enter Y or N to confirm or decline room dimensions.');
+            writeMessageToConsole('Please enter Y or N to confirm or decline room dimensions.', 'error');
         }
     }
 };
