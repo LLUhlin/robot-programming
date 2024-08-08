@@ -147,13 +147,13 @@ const confirmPosition = async (x, y, orientation) => {
 class Robot {
     /**
      * Create a robot.
-     * @param {number} x - Starting position on the x-axis of robot inside the room. 
-     * @param {number} y - Starting position on the y-axis of robot inside the room. 
-     * @param {string} orientation - Starting orientation of the robot inside the room. Accepted orientations: N / E / S / W. 
+     * @param {number} x - The starting position of the robot on the x-axis within the room.
+     * @param {number} y - The starting position of the robot on the y-axis within the room.
+     * @param {string} orientation - The initial orientation of the robot. Accepted values: 'N' (North), 'E' (East), 'S' (South), 'W' (West).
      * @param {Room} room - The room object that defines the boundaries within which the robot can move.
-     * @throws {Error} If x or y is outside of Room bounds.
-     * @throws {Error} If orientation is invalid, based on keys inside ORIENTATION
-     * @throws {Error} If room is not instance of class Room.
+     * @throws {Error} If the x or y coordinates are outside the room bounds.
+     * @throws {Error} If the orientation is invalid, not one of the accepted values.
+     * @throws {Error} If the room is not an instance of the Room class.
      */
     constructor(x, y, orientation, room) {
 
