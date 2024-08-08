@@ -1,5 +1,5 @@
-const { getInput, writeMessageToConsole } = require('./utils');
-const { ORIENTATION } = require('./consts');
+const { getInput, writeMessageToConsole } = require("./utils");
+const { ORIENTATION, CONFIRM_INPUT } = require("./consts");
 
 /**
  * Validate the postition input.
@@ -26,7 +26,7 @@ const validatePosition = (value, max, axis) => {
         writeMessageToConsole([
             `"${value}" is not a valid starting position on the ${axis}-axis`,
             `must be a round number between 0 and ${max}`
-        ], 'error');
+        ], "error");
         return false;
     }
     return true;
@@ -35,13 +35,13 @@ const validatePosition = (value, max, axis) => {
 /**
  * Validate orientation.
  * 
- * @param {string} orientation - String value that should contain only one character restricted to what's inside ORIENTATION object. 
+ * @param {string} orientation - String value that should contain only one character restricted to what"s inside ORIENTATION object. 
  * @returns {boolean} - Returns true or false depending on successful validation.
  */
 const validateOrientation = (orientation) => {
     if (!orientation || !ORIENTATION[orientation.toUpperCase()]) {
         if (orientation) {
-            writeMessageToConsole(`"${orientation}" is not a valid orientation.`, 'error');
+            writeMessageToConsole(`"${orientation}" is not a valid orientation.`, "error");
         }
         return false;
     }
@@ -49,7 +49,7 @@ const validateOrientation = (orientation) => {
 };
 
 /**
- * Validating and let's user re-confirm starting position on the given axis until valid input.
+ * Validating and let"s user re-confirm starting position on the given axis until valid input.
  * 
  * @async
  * @param {(string|numeric)} value - Input as a string or numeric. 
@@ -60,14 +60,14 @@ const validateOrientation = (orientation) => {
 const validateAndConfirmStartPosition = async (value, max, axis) => {
     let validStart = validatePosition(value, max, axis);
     while (!validStart) {
-        value = await getInput(`Enter starting position on the ${axis}-axis between 0 and ${max}: `, value ? '\n' : '');
+        value = await getInput(`Enter starting position on the ${axis}-axis between 0 and ${max}: `, value ? "\n" : "");
         validStart = validatePosition(value, max, axis);
     }
     return Number(value);
 };
 
 /**
- * Validating and let's user re-confirm orientation until valid input.
+ * Validating and let"s user re-confirm orientation until valid input.
  * 
  * @async
  * @param {string} startOrientation - String input that looks for the chars accessable in ORIENTATION object.
@@ -77,7 +77,7 @@ const validateAndConfirmStartOrientation = async (startOrientation) => {
     let validStartOrientation = startOrientation && ORIENTATION[startOrientation.toUpperCase()];
 
     while (!validStartOrientation) {
-        startOrientation = await getInput('Please provide a valid orientation (N / E / S / W): ', startOrientation ? '\n' : '');
+        startOrientation = await getInput("Please provide a valid orientation (N / E / S / W): ", startOrientation ? "\n" : "");
         validStartOrientation = validateOrientation(startOrientation);
     }
 
@@ -97,16 +97,47 @@ const validateAndConfirmStartOrientation = async (startOrientation) => {
 const getRobotPosition = async (room) => {
 
     const { width, height } = room;
-    let startX, startY, startOrientation;
+    let startX, startY, startOrientation, positionBlockComplete = false;
 
-    const startPos = await getInput('Enter starting position and orientation (x y orientation): ');
-    [startX, startY, startOrientation] = startPos.split(' ').filter(e => e);
+    while (!positionBlockComplete) {
+        const startPos = await getInput("Enter starting position and orientation (x y orientation): ");
+        [startX, startY, startOrientation] = startPos.split(" ").filter(e => e);
+    
+        startX = await validateAndConfirmStartPosition(startX, width, "x");
+        startY = await validateAndConfirmStartPosition(startY, height, "y");
+        startOrientation = await validateAndConfirmStartOrientation(startOrientation);
 
-    startX = await validateAndConfirmStartPosition(startX, width, 'x');
-    startY = await validateAndConfirmStartPosition(startY, height, 'y');
-    startOrientation = await validateAndConfirmStartOrientation(startOrientation);
+        positionBlockComplete = await confirmPosition(startX, startY, startOrientation);
+    }
+    
 
     return { startX, startY, startOrientation };
+};
+
+/**
+ * Confirming position of the robot
+ * Awaits user input and once valid (Y / N) based on CONFIRM_INPUT, returns true or false.
+ * 
+ * @async
+ * @param {number} x - Numeric value of the robot position in x-axis.
+ * @param {number} y - Numeric value of the robot position in y-axis.
+ * @param {string} orientation - String value based on accepted values: N / E / S / W
+ * @returns {Promise<boolean>} - Returns true or false depending on user input.
+ */
+const confirmPosition = async (x, y, orientation) => {
+
+    writeMessageToConsole(["Robot Position and Orientation", `x: ${x}, y: ${y}, Orientation: ${orientation}`], "success");
+
+    while (true) {
+        const confirmSize = await getInput("Confirm robot position and orientation (Y / N): ");
+        const confirmation = confirmSize.toUpperCase().trim();
+        if (CONFIRM_INPUT[confirmation] !== undefined) {
+            return CONFIRM_INPUT[confirmation];
+        } else {
+            writeMessageToConsole("Please enter Y or N to confirm or decline robot position and orientation.", "error");
+        }
+    }
+
 };
 
 module.exports = {

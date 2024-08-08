@@ -1,4 +1,4 @@
-const readline = require('readline');
+const readline = require("readline");
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -8,7 +8,8 @@ const rl = readline.createInterface({
 const CONSOLE_COLOURS = {
     error: "\x1b[31m",
     success: "\x1b[32m",
-    default: "\x1b[37m"
+    default: "\x1b[37m",
+    message: "\x1b[36m"
 }
 
 /**
@@ -18,7 +19,7 @@ const CONSOLE_COLOURS = {
  * @param {string} prefix - Question will default with new line as prefix of question, can be omitted if needed or adjusted as needed.
  * @returns {Promise<string>} - Returns user input.
  */
-const getInput = (prompt, prefix = '\n') => {
+const getInput = (prompt, prefix = "\n") => {
     return new Promise((resolve) => rl.question(`${prefix}${prompt}`, resolve));
 };
 
@@ -27,18 +28,24 @@ const getInput = (prompt, prefix = '\n') => {
  * Will use newline on first item to keep consistency in console logs with spacing for easer read.
  * 
  * @param {(string|string[])} outputs - String or Array of strings.
- * @param {string} type - String value that takes a colour specified in CONSOLE_COLOURS for better readability of the messages in the console.
+ * @param {string} type - String value that takes a colour specified in CONSOLE_COLOURS for better readability of the messages in the console. Available types: "error" (red), "success" (green), "message" (cyan) and "default" (white). Default value: "default"
+ * @param {boolean} clear - Specifies if console should be cleared or not before printing the message. Default value: false.
  */
-const writeMessageToConsole = (outputs, type = 'default') => {
-    console.log(''); // log empty string for spacing from previous message.
+const writeMessageToConsole = (outputs, type = "default", clear = false) => {
+    console.log(""); // log empty string for spacing from previous message.
+
+    if (clear) {
+        process.stdout.write("\x1Bc")
+    }
+
     if (Array.isArray(outputs)) {
         for (let i = 0; i < outputs.length; i++) {
             console.log(CONSOLE_COLOURS[type] ?? CONSOLE_COLOURS.default, outputs[i], "\x1b[0m");
         }
-    } else if (typeof(outputs) === 'string') {
+    } else if (typeof (outputs) === "string") {
         console.log(CONSOLE_COLOURS[type] ?? CONSOLE_COLOURS.default, outputs, "\x1b[0m");
     } else {
-        console.log(CONSOLE_COLOURS.error, `Unexpected outputs: ${outputs}`, "\x1b[0m");
+        console.dir(CONSOLE_COLOURS.error, `Unexpected outputs: ${outputs}`, "\x1b[0m");
     }
 }
 
