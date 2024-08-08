@@ -6,6 +6,7 @@ const { ROOM_CONSTRAINTS, CONFIRM_INPUT } = require("./consts");
  * 
  * @param {(string|numeric)} value - Input as a string or numeric, converts into a numeric for comparision, must be a round number.
  * @param {string} dimensionName - Name of dimension to be validated, must be existing in ROOM_CONSTRAINTS in order to run.
+ * @throws {Error} If dimension doesn't exist in ROOM_CONSTRAINTS as key.
  * @returns {boolean} - Returns true or false depending on successful validation.
  */
 const isValidDimension = (value, dimensionName) => {
@@ -104,10 +105,43 @@ const confirmDimensions = async (width, height) => {
     }
 };
 
+/**
+ * Class representing a room.
+ */
+class Room {
+    /**
+     * Create a room.
+     * @param {number} width - The width of the room.
+     * @param {number} height - The height of the room.
+     * @throws {Error} If the width or height is outside the allowed constraints.
+     */
+    constructor(width, height) {
+        
+        if (width < ROOM_CONSTRAINTS.width.min || width > ROOM_CONSTRAINTS.width.max || height < ROOM_CONSTRAINTS.height.min || height > ROOM_CONSTRAINTS.height.max) {
+            throw new Error(`Invalid dimensions. Width must be between ${ROOM_CONSTRAINTS.width.min} and ${ROOM_CONSTRAINTS.width.max}, and height must be between ${ROOM_CONSTRAINTS.height.min} and ${ROOM_CONSTRAINTS.height.max}, exiting program`);
+        }
+
+        this.width = width;
+        this.height = height;
+    }
+
+    /**
+     * Check if a position is valid within the room dimensions.
+     * @param {number} x - The x-coordinate of the position.
+     * @param {number} y - The y-coordinate of the position.
+     * @returns {boolean} True if the position is valid, false otherwise.
+     */
+    isValidPosition(x, y) {
+        return x >= 0 && x <= this.width && y >= 0 && y <= this.height;
+    }
+}
+
 module.exports = {
     isValidDimension,
     validateAndConfirmValue,
 
     getRoomDimensions,
     confirmDimensions,
+
+    Room
 };

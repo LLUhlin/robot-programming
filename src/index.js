@@ -1,6 +1,6 @@
 const { ROOM_CONSTRAINTS } = require("./consts");
 const { getRobotPosition } = require("./robot");
-const { getRoomDimensions } = require("./room");
+const { getRoomDimensions, Room } = require("./room");
 const { rl, writeMessageToConsole } = require("./utils");
 
 const main = async () => {
@@ -17,16 +17,16 @@ const main = async () => {
         // Retrieve room dimensions from user input.
         const { width, height } = await getRoomDimensions();
 
-        const room = { width, height };
+        const room = new Room(width, height);
 
-        // Retrieve robot starting position based on room dimensions.
+        // Retrieve robot starting position based on room dimensions from user input.
         const { startX, startY, startOrientation } = await getRobotPosition(room);
 
         writeMessageToConsole([
             "Room and Robot Confirmed\n",
             "Room dimensions",
-            `Room width: ${width}`,
-            `Room height: ${height}\n`,
+            `Room width: ${room.width}`,
+            `Room height: ${room.height}\n`,
             "Robot position",
             `Robot x: ${startX}`,
             `Robot y: ${startY}`,

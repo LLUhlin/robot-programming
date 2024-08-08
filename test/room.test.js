@@ -1,5 +1,5 @@
 const { ROOM_CONSTRAINTS } = require("../src/consts");
-const { isValidDimension, validateAndConfirmValue, getRoomDimensions, confirmDimensions } = require("../src/room");
+const { isValidDimension, validateAndConfirmValue, getRoomDimensions, confirmDimensions, Room } = require("../src/room");
 const { getInput, rl } = require("../src/utils");
 
 jest.mock("../src/utils");
@@ -144,6 +144,54 @@ describe("Room Functions", () => {
                 .mockResolvedValueOnce("Y");
             const result = await getRoomDimensions();
             expect(result).toEqual({ width: 5, height: 7 });
+        });
+    });
+});
+
+describe("Room", () => {
+    describe('constructor', () => {
+        it('should create a room with the given width and height', () => {
+            const room = new Room(10, 5);
+            expect(room.width).toBe(10);
+            expect(room.height).toBe(5);
+        });
+
+        it("should throw error if width is a less than room constraints for width", () => {
+            expect(() => new Room(ROOM_CONSTRAINTS.width.min - 1, 5)).toThrow(Error);
+        });
+
+        it("should throw error if width is a more than room constraints for width", () => {
+            expect(() => new Room(ROOM_CONSTRAINTS.width.max + 1, 5)).toThrow(Error);
+        });
+
+        it("should throw error if height is a less than room constraints for height", () => {
+            expect(() => new Room(ROOM_CONSTRAINTS.height.min - 1, 5)).toThrow(Error);
+        });
+
+        it("should throw error if height is a more than room constraints for height", () => {
+            expect(() => new Room(ROOM_CONSTRAINTS.height.max + 1, 5)).toThrow(Error);
+        });
+
+    });
+
+    describe('isValidPosition', () => {
+        let room;
+
+        beforeEach(() => {
+            room = new Room(10, 5);
+        });
+
+        it('should return true for a valid position within the room', () => {
+            expect(room.isValidPosition(3, 4)).toBe(true);
+            expect(room.isValidPosition(0, 0)).toBe(true);
+            expect(room.isValidPosition(10, 5)).toBe(true);
+        });
+
+        it('should return false for a position outside the room boundaries', () => {
+            expect(room.isValidPosition(11, 4)).toBe(false);
+            expect(room.isValidPosition(3, 6)).toBe(false);
+            expect(room.isValidPosition(-1, 2)).toBe(false);
+            expect(room.isValidPosition(2, -1)).toBe(false);
         });
     });
 });
