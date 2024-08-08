@@ -52,7 +52,7 @@ npm test
 
 Run the test with open handles:
 
-npm devTest
+npm run devTest
 
 ## Usage
 
