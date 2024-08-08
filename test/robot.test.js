@@ -1,4 +1,5 @@
-const { validatePosition, validateOrientation, validateAndConfirmStartPosition, validateAndConfirmStartOrientation, getRobotPosition } = require("../src/robot");
+const { validatePosition, validateOrientation, validateAndConfirmStartPosition, validateAndConfirmStartOrientation, getRobotPosition, Robot } = require("../src/robot");
+const { Room } = require("../src/room");
 const { getInput, rl } = require("../src/utils");
 
 jest.mock("../src/utils");
@@ -109,6 +110,111 @@ describe("Robot Functions", () => {
             const result = await getRobotPosition(room);
 
             expect(result).toEqual({ startX: 2, startY: 4, startOrientation: "N" });
+        });
+    });
+});
+
+
+describe('Robot', () => {
+
+    let room;
+    beforeEach(() => {
+        room = new Room(5, 5);
+    });
+
+    describe('constructor', () => {
+        it('should create a robot with valid parameters', () => {
+            const robot = new Robot(1, 2, 'N', room);
+            expect(robot.x).toBe(1);
+            expect(robot.y).toBe(2);
+            expect(robot.orientation).toBe('N');
+            expect(robot.room).toBe(room);
+        });
+
+        it('should throw an error if the robot is placed out of bounds', () => {
+            expect(() => new Robot(6, 2, 'N', room)).toThrow(Error);
+        });
+
+        it('should throw an error if the orientation is invalid', () => {
+            expect(() => new Robot(1, 2, 'A', room)).toThrow(Error);
+        });
+
+        it('should throw an error if the room is invalid', () => {
+            expect(() => new Robot(1, 2, 'N', {})).toThrow(Error);
+        });
+    });
+
+    describe('executeCommand', () => {
+        let robot;
+        beforeEach(() => {
+            robot = new Robot(1, 2, 'N', room);
+        });
+
+        it('should turn left when the command is "L"', () => {
+            robot.executeCommand('L');
+            expect(robot.orientation).toBe('W');
+        });
+
+        it('should turn right when the command is "R"', () => {
+            robot.executeCommand('R');
+            expect(robot.orientation).toBe('E');
+        });
+
+        it('should move forward when the command is "F"', () => {
+            robot.executeCommand('F');
+            expect(robot.x).toBe(1);
+            expect(robot.y).toBe(3);
+        });
+
+        it('should throw an error if the command is invalid', () => {
+            expect(() => robot.executeCommand('X')).not.toThrow();
+            // X command does nothing in this context, no errors.
+        });
+    });
+
+    describe('moveForward', () => {
+        let robot;
+        beforeEach(() => {
+            robot = new Robot(1, 2, 'N', room);
+        });
+
+        it('should move north when facing north', () => {
+            robot.moveForward();
+            expect(robot.x).toBe(1);
+            expect(robot.y).toBe(3);
+        });
+
+        it('should move east when facing east', () => {
+            robot.orientation = 'E';
+            robot.moveForward();
+            expect(robot.x).toBe(2);
+            expect(robot.y).toBe(2);
+        });
+
+        it('should move south when facing south', () => {
+            robot.orientation = 'S';
+            robot.moveForward();
+            expect(robot.x).toBe(1);
+            expect(robot.y).toBe(1);
+        });
+
+        it('should move west when facing west', () => {
+            robot.orientation = 'W';
+            robot.moveForward();
+            expect(robot.x).toBe(0);
+            expect(robot.y).toBe(2);
+        });
+
+        it('should throw an error if moving out of bounds', () => {
+            robot = new Robot(0, 0, 'S', room);
+            expect(() => robot.moveForward()).toThrow(Error);
+        });
+    });
+
+    describe('report', () => {
+        it('should report the correct position and orientation', () => {
+            const robot = new Robot(1, 2, 'N', room);
+            expect(robot.report()).toBe('1 2 N');
         });
     });
 });

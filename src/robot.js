@@ -1,5 +1,6 @@
 const { getInput, writeMessageToConsole } = require("./utils");
 const { ORIENTATION, CONFIRM_INPUT } = require("./consts");
+const { Room } = require("./room");
 
 /**
  * Validate the postition input.
@@ -102,14 +103,14 @@ const getRobotPosition = async (room) => {
     while (!positionBlockComplete) {
         const startPos = await getInput("Enter starting position and orientation (x y orientation): ");
         [startX, startY, startOrientation] = startPos.split(" ").filter(e => e);
-    
+
         startX = await validateAndConfirmStartPosition(startX, width, "x");
         startY = await validateAndConfirmStartPosition(startY, height, "y");
         startOrientation = await validateAndConfirmStartOrientation(startOrientation);
 
         positionBlockComplete = await confirmPosition(startX, startY, startOrientation);
     }
-    
+
 
     return { startX, startY, startOrientation };
 };
@@ -140,6 +141,112 @@ const confirmPosition = async (x, y, orientation) => {
 
 };
 
+/**
+ * Class representing a robot.
+ */
+class Robot {
+    /**
+     * Create a robot.
+     * @param {number} x - Starting position on the x-axis of robot inside the room. 
+     * @param {number} y - Starting position on the y-axis of robot inside the room. 
+     * @param {string} orientation - Starting orientation of the robot inside the room. Accepted orientations: N / E / S / W. 
+     * @param {Room} room - The room object that defines the boundaries within which the robot can move.
+     * @throws {Error} If x or y is outside of Room bounds.
+     * @throws {Error} If orientation is invalid, based on keys inside ORIENTATION
+     * @throws {Error} If room is not instance of class Room.
+     */
+    constructor(x, y, orientation, room) {
+
+        if (x < 0 || x > room.width || y < 0 || y > room.height) {
+            throw new Error('Robot is being placed out of bounds, exiting the program.')
+        }
+        if (!ORIENTATION[orientation]) {
+            throw new Error('Invalid orientation for Robot, exiting the program.');
+        }
+        if (!(room instanceof Room)) {
+            throw new Error('Invalid Room, robot cannot be placed, exiting the program.');
+        }
+
+        this.x = x;
+        this.y = y;
+        this.orientation = orientation;
+        this.room = room;
+    }
+
+    /**
+     * Execute a command to control the robot.
+     * @param {string} command - The command to execute ('L' for left, 'R' for right, 'F' for forward).
+     */
+    executeCommand(command) {
+        switch (command) {
+            case 'L':
+                this.turnLeft();
+                break;
+            case 'R':
+                this.turnRight();
+                break;
+            case 'F':
+                this.moveForward();
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Turn the robot left (counterclockwise).
+     * Updates the robot's orientation to the next one in the sequence: N -> W -> S -> E -> N.
+     */
+    turnLeft() {
+        const orientations = ['N', 'W', 'S', 'E'];
+        this.orientation = orientations[(orientations.indexOf(this.orientation) + 1) % 4];
+    }
+
+    /**
+     * Turn the robot right (clockwise).
+     * Updates the robot's orientation to the next one in the sequence: N -> E -> S -> W -> N.
+     */
+    turnRight() {
+        const orientations = ['N', 'E', 'S', 'W'];
+        this.orientation = orientations[(orientations.indexOf(this.orientation) + 1) % 4];
+    }
+
+    /**
+     * Move the robot forward in the direction it is currently facing.
+     * Updates the robot's position based on its orientation.
+     * @throws {Error} If the robot moves out of the room's bounds.
+     */
+    moveForward() {
+        switch (this.orientation) {
+            case 'N':
+                this.y += 1;
+                break;
+            case 'E':
+                this.x += 1;
+                break;
+            case 'S':
+                this.y -= 1;
+                break;
+            case 'W':
+                this.x -= 1;
+                break;
+        }
+
+        if (!this.room.isValidPosition(this.x, this.y)) {
+            throw new Error('Robot moved out of bounds!');
+        }
+    }
+
+    /**
+     * Report the robot's current position and orientation.
+     * @returns {string} The current position and orientation of the robot in the format "x y orientation".
+     */
+    report() {
+        return `${this.x} ${this.y} ${this.orientation}`;
+    }
+}
+
+
 module.exports = {
     validatePosition,
     validateOrientation,
@@ -148,4 +255,5 @@ module.exports = {
 
     getRobotPosition,
 
+    Robot
 }
