@@ -12,17 +12,29 @@ The robot can be moved throughout the room with a string of navigation commands 
 robot-programming/
 
 ├── src/
+
 │ ├── consts.js
+
 │ ├── index.js
+
 │ ├── robot.js
+
 │ ├── room.js
+
 │ └── utils.js
+
 ├── test/
+
 │ ├── robot.test.js
+
 │ └── room.test.js
+
 ├── package.json
+
 ├── package-lock.json
+
 ├── .gitignore
+
 └── README.md
 
 ### src/
