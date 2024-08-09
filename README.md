@@ -5,6 +5,7 @@
 A Node.js application to control a robot within a defined room.
 
 This project is a robot programming application that includes validation of room dimensions, robot starting positions, and orientations. It also confirms the dimensions and orientations through user inputs.
+The robot can be moved throughout the room with a string of navigation commands and will output the last position and orientation once input is collected.
 
 ## Project Structure
 
@@ -86,3 +87,7 @@ Run the test with open handles:
 >  *The program trims and converts your input so that it accepts incorrect commands and is not case-sensitive, meaning that "R a s . f F w L tfr" is the same input as the above example.*
 
 5. Once entered you'll receive a message of the position of your robot and if out of bounds will throw an error and exit the program.
+
+## Licence
+
+This project is licensed under the ISC License
