@@ -1,5 +1,5 @@
 const { getInput, writeMessageToConsole } = require("./utils");
-const { ORIENTATION, CONFIRM_INPUT } = require("./consts");
+const { ORIENTATION, CONFIRM_INPUT, ROBOT_COMMANDS } = require("./consts");
 const { Room } = require("./room");
 
 /**
@@ -36,7 +36,7 @@ const validatePosition = (value, max, axis) => {
 /**
  * Validate orientation.
  * 
- * @param {string} orientation - String value that should contain only one character restricted to what"s inside ORIENTATION object. 
+ * @param {string} orientation - String value that should contain only one character restricted to what's inside ORIENTATION object. 
  * @returns {boolean} - Returns true or false depending on successful validation.
  */
 const validateOrientation = (orientation) => {
@@ -50,7 +50,7 @@ const validateOrientation = (orientation) => {
 };
 
 /**
- * Validating and let"s user re-confirm starting position on the given axis until valid input.
+ * Validating and let's user re-confirm starting position on the given axis until valid input.
  * 
  * @async
  * @param {(string|numeric)} value - Input as a string or numeric. 
@@ -68,7 +68,7 @@ const validateAndConfirmStartPosition = async (value, max, axis) => {
 };
 
 /**
- * Validating and let"s user re-confirm orientation until valid input.
+ * Validating and let's user re-confirm orientation until valid input.
  * 
  * @async
  * @param {string} startOrientation - String input that looks for the chars accessable in ORIENTATION object.
@@ -90,12 +90,13 @@ const validateAndConfirmStartOrientation = async (startOrientation) => {
  * 
  * @async
  * @param {Object} room - Room passed in for constraints validation.
+ * @param {boolean} confirmBeforeContinue - Whether the program should pause for confirmation after specifying position and orientation.
  * @returns {Promise<Object>} startPosition - The start position details of the robot.
  * @returns {numeric} startPosition.startX - The start position in x-axis.
  * @returns {numeric} startPosition.startY - The start position in y-axis.
  * @returns {string} startPosition.startOrientation - The orientation that the robit is facing.
  */
-const getRobotPosition = async (room) => {
+const getRobotPosition = async (room, confirmBeforeContinue) => {
 
     const { width, height } = room;
     let startX, startY, startOrientation, positionBlockComplete = false;
@@ -108,7 +109,7 @@ const getRobotPosition = async (room) => {
         startY = await validateAndConfirmStartPosition(startY, height, "y");
         startOrientation = await validateAndConfirmStartOrientation(startOrientation);
 
-        positionBlockComplete = await confirmPosition(startX, startY, startOrientation);
+        positionBlockComplete = !confirmBeforeContinue || await confirmPosition(startX, startY, startOrientation);
     }
 
 
@@ -142,6 +143,57 @@ const confirmPosition = async (x, y, orientation) => {
 };
 
 /**
+ * Enter commands to move around robot in the room.
+ * 
+ * @param {Robot} robot - The robot that is to be moved around the room. 
+ * @param {boolean} confirmBeforeContinue -  Whether the program should pause for confirmation after specifying commands.
+ */
+const moveRobotAroundTheRoom = async (robot, confirmBeforeContinue) => {
+
+    writeMessageToConsole(["Accepted commands:", "L: Turn left", "R: Turn right", "F: Walk forward"], "message");
+
+    let navigationCommands, commandBlockComplete = false;
+
+    while (!commandBlockComplete) {
+        const movement = await getInput("Please enter robot navigation commands: ");
+        navigationCommands = movement.split("").filter(e => ROBOT_COMMANDS[e?.toUpperCase()]);
+
+        commandBlockComplete = !confirmBeforeContinue || await confirmCommands(navigationCommands);
+    }
+
+    for (let i = 0; i < navigationCommands.length; i++) {
+        robot.executeCommand(navigationCommands[i]);
+    }
+
+    writeMessageToConsole(`Robot has finished moving, position is now: ${robot.report()}`, "success");
+};
+
+
+/**
+ * Confirming navigation commands.
+ * Awaits user input and once valid (Y / N) based on CONFIRM_INPUT, returns true or false.
+ * 
+ * @async
+ * @param {string} commands - String value of commands accepted based on ROBOT_COMMANDS.
+ * @returns {Promise<boolean>} - Returns true or false depending on user input.
+ */
+const confirmCommands = async (commands) => {
+
+    writeMessageToConsole(["Robot Commands", commands.toString().toUpperCase().replaceAll(","," ")], "success");
+
+    while (true) {
+        const confirmSize = await getInput("Confirm robot commands (Y / N): ");
+        const confirmation = confirmSize.toUpperCase().trim();
+        if (CONFIRM_INPUT[confirmation] !== undefined) {
+            return CONFIRM_INPUT[confirmation];
+        } else {
+            writeMessageToConsole("Please enter Y or N to confirm or decline robot commands.", "error");
+        }
+    }
+
+};
+
+/**
  * Class representing a robot.
  */
 class Robot {
@@ -158,13 +210,13 @@ class Robot {
     constructor(x, y, orientation, room) {
 
         if (x < 0 || x > room.width || y < 0 || y > room.height) {
-            throw new Error('Robot is being placed out of bounds, exiting the program.')
+            throw new Error("Robot is being placed out of bounds, exiting the program.")
         }
         if (!ORIENTATION[orientation]) {
-            throw new Error('Invalid orientation for Robot, exiting the program.');
+            throw new Error("Invalid orientation for Robot, exiting the program.");
         }
         if (!(room instanceof Room)) {
-            throw new Error('Invalid Room, robot cannot be placed, exiting the program.');
+            throw new Error("Invalid Room, robot cannot be placed, exiting the program.");
         }
 
         this.x = x;
@@ -178,14 +230,14 @@ class Robot {
      * @param {string} command - The command to execute ('L' for left, 'R' for right, 'F' for forward).
      */
     executeCommand(command) {
-        switch (command) {
-            case 'L':
+        switch (command.toUpperCase()) {
+            case "L":
                 this.turnLeft();
                 break;
-            case 'R':
+            case "R":
                 this.turnRight();
                 break;
-            case 'F':
+            case "F":
                 this.moveForward();
                 break;
             default:
@@ -198,7 +250,7 @@ class Robot {
      * Updates the robot's orientation to the next one in the sequence: N -> W -> S -> E -> N.
      */
     turnLeft() {
-        const orientations = ['N', 'W', 'S', 'E'];
+        const orientations = ["N", "W", "S", "E"];
         this.orientation = orientations[(orientations.indexOf(this.orientation) + 1) % 4];
     }
 
@@ -207,7 +259,7 @@ class Robot {
      * Updates the robot's orientation to the next one in the sequence: N -> E -> S -> W -> N.
      */
     turnRight() {
-        const orientations = ['N', 'E', 'S', 'W'];
+        const orientations = ["N", "E", "S", "W"];
         this.orientation = orientations[(orientations.indexOf(this.orientation) + 1) % 4];
     }
 
@@ -218,22 +270,22 @@ class Robot {
      */
     moveForward() {
         switch (this.orientation) {
-            case 'N':
+            case "N":
                 this.y += 1;
                 break;
-            case 'E':
+            case "E":
                 this.x += 1;
                 break;
-            case 'S':
+            case "S":
                 this.y -= 1;
                 break;
-            case 'W':
+            case "W":
                 this.x -= 1;
                 break;
         }
 
         if (!this.room.isValidPosition(this.x, this.y)) {
-            throw new Error('Robot moved out of bounds!');
+            throw new Error("Robot moved out of bounds!");
         }
     }
 
@@ -244,7 +296,7 @@ class Robot {
     report() {
         return `${this.x} ${this.y} ${this.orientation}`;
     }
-}
+};
 
 
 module.exports = {
@@ -254,6 +306,7 @@ module.exports = {
     validateAndConfirmStartOrientation,
 
     getRobotPosition,
+    moveRobotAroundTheRoom,
 
     Robot
 }

@@ -1,4 +1,5 @@
 const readline = require("readline");
+const { CONFIRM_INPUT } = require("./consts");
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -35,7 +36,7 @@ const writeMessageToConsole = (outputs, type = "default", clear = false) => {
     console.log(""); // log empty string for spacing from previous message.
 
     if (clear) {
-        process.stdout.write("\x1Bc")
+        process.stdout.write("\x1Bc");
     }
 
     if (Array.isArray(outputs)) {
@@ -49,8 +50,28 @@ const writeMessageToConsole = (outputs, type = "default", clear = false) => {
     }
 }
 
+/**
+ * Retrieve confirmation from the user.
+ * Awaits user input and once valid (Y / N) based on CONFIRM_INPUT, returns true or false.
+ * 
+ * @async
+ * @returns {Promise<boolean>} - Returns true or false depending on user input.
+ */
+const shouldConfirmBeforeContinue = async () => {
+    while (true) {
+        const shouldConfirm = await getInput("Would you like to confirm before moving forward when setting up the Room and the Robot? (Y / N): ");
+        const confirmation = shouldConfirm.toUpperCase().trim();
+        if (CONFIRM_INPUT[confirmation] !== undefined) {
+            return CONFIRM_INPUT[confirmation];
+        } else {
+            writeMessageToConsole("Please enter Y or N to confirm or decline.", "error");
+        }
+    }
+}
+
 module.exports = {
     rl,
     getInput,
     writeMessageToConsole,
+    shouldConfirmBeforeContinue,
 };

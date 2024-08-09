@@ -22,10 +22,18 @@ const ORIENTATION = {
     E: true,
     S: true,
     W: true
-}
+};
+
+// Accepted Robot movement commands.
+const ROBOT_COMMANDS = {
+    F: true,
+    L: true,
+    R: true
+};
 
 module.exports = {
     ROOM_CONSTRAINTS,
     CONFIRM_INPUT,
-    ORIENTATION
+    ORIENTATION,
+    ROBOT_COMMANDS
 }

@@ -61,11 +61,12 @@ const validateAndConfirmValue = async (value, dimension) => {
  * Awaits user input and once valid inputs has been given, returns the dimensions.
  * 
  * @async
+ * @param {boolean} confirmBeforeContinue - Whether the program should pause for confirmation after specifying dimensions.
  * @returns {Promise<Object>} dimensions - The dimensions of the room.
  * @returns {number} dimensions.width - The width of the room.
  * @returns {number} dimensions.height - The height of the room.
  */
-const getRoomDimensions = async () => {
+const getRoomDimensions = async (confirmBeforeContinue) => {
     let width, height, dimensionBlockComplete = false;
 
     while (!dimensionBlockComplete) {
@@ -75,7 +76,7 @@ const getRoomDimensions = async () => {
         width = await validateAndConfirmValue(width, "width");
         height = await validateAndConfirmValue(height, "height");
 
-        dimensionBlockComplete = await confirmDimensions(width, height);
+        dimensionBlockComplete = !confirmBeforeContinue || await confirmDimensions(width, height);
     }
 
     return { width, height };

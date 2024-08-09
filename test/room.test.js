@@ -100,9 +100,15 @@ describe("Room Functions", () => {
     });
 
     describe("getRoomDimensions", () => {
-        it("should retrieve valid room dimensions", async () => {
+        it("should retrieve valid room dimensions and force user to confirm input", async () => {
             getInput.mockResolvedValueOnce("15 10").mockResolvedValueOnce("Y");
-            const result = await getRoomDimensions();
+            const result = await getRoomDimensions(true);
+            expect(result).toEqual({ width: 15, height: 10 });
+        });
+
+        it("should retrieve valid room dimensions without the need of user to confirm input", async () => {
+            getInput.mockResolvedValueOnce("15 10");
+            const result = await getRoomDimensions(false);
             expect(result).toEqual({ width: 15, height: 10 });
         });
 
@@ -112,45 +118,72 @@ describe("Room Functions", () => {
                 .mockResolvedValueOnce("N")
                 .mockResolvedValueOnce("12 18")
                 .mockResolvedValueOnce("Y");
-            const result = await getRoomDimensions();
+            const result = await getRoomDimensions(true);
             expect(result).toEqual({ width: 12, height: 18 });
         });
 
-        it("should re-prompt for dimensions if dimensions are invalid", async () => {
+        it("should re-prompt for dimensions if dimensions are invalid and force user to confirm input", async () => {
             getInput
                 .mockResolvedValueOnce(`10 ${ROOM_CONSTRAINTS.height.max + 1}`)
                 .mockResolvedValueOnce("18")
                 .mockResolvedValueOnce("Y");
-            const result = await getRoomDimensions();
+            const result = await getRoomDimensions(true);
             expect(result).toEqual({ width: 10, height: 18 });
         });
 
-        it("should re-prompt for individual dimensions if dimension is invalid", async () => {
+        it("should re-prompt for individual dimensions if dimension is invalid and force user to confirm input", async () => {
             getInput
                 .mockResolvedValueOnce(`${ROOM_CONSTRAINTS.width.min - 1} ${ROOM_CONSTRAINTS.height.max + 1}`)
                 .mockResolvedValueOnce("5")
                 .mockResolvedValueOnce("")
                 .mockResolvedValueOnce("7")
                 .mockResolvedValueOnce("Y");
-            const result = await getRoomDimensions();
+            const result = await getRoomDimensions(true);
             expect(result).toEqual({ width: 5, height: 7 });
         });
 
-        it("should re-prompt for confirmation if confirmation value is invalid", async () => {
+        it("should re-prompt for confirmation if confirmation value is invalid and force user to confirm input", async () => {
             getInput
                 .mockResolvedValueOnce("5 7")
                 .mockResolvedValueOnce("")
                 .mockResolvedValueOnce("7")
                 .mockResolvedValueOnce("Y");
-            const result = await getRoomDimensions();
+            const result = await getRoomDimensions(true);
+            expect(result).toEqual({ width: 5, height: 7 });
+        });
+
+        it("should re-prompt for dimensions if dimensions are invalid without the need of user to confirm input", async () => {
+            getInput
+                .mockResolvedValueOnce(`10 ${ROOM_CONSTRAINTS.height.max + 1}`)
+                .mockResolvedValueOnce("18")
+            const result = await getRoomDimensions(false);
+            expect(result).toEqual({ width: 10, height: 18 });
+        });
+
+        it("should re-prompt for individual dimensions if dimension is invalid without the need of user to confirm input", async () => {
+            getInput
+                .mockResolvedValueOnce(`${ROOM_CONSTRAINTS.width.min - 1} ${ROOM_CONSTRAINTS.height.max + 1}`)
+                .mockResolvedValueOnce("5")
+                .mockResolvedValueOnce("")
+                .mockResolvedValueOnce("7")
+            const result = await getRoomDimensions(false);
+            expect(result).toEqual({ width: 5, height: 7 });
+        });
+
+        it("should re-prompt for confirmation if confirmation value is invalid without the need of user to confirm input", async () => {
+            getInput
+                .mockResolvedValueOnce("5 7")
+                .mockResolvedValueOnce("")
+                .mockResolvedValueOnce("7")
+            const result = await getRoomDimensions(false);
             expect(result).toEqual({ width: 5, height: 7 });
         });
     });
 });
 
 describe("Room", () => {
-    describe('constructor', () => {
-        it('should create a room with the given width and height', () => {
+    describe("constructor", () => {
+        it("should create a room with the given width and height", () => {
             const room = new Room(10, 5);
             expect(room.width).toBe(10);
             expect(room.height).toBe(5);
@@ -174,20 +207,20 @@ describe("Room", () => {
 
     });
 
-    describe('isValidPosition', () => {
+    describe("isValidPosition", () => {
         let room;
 
         beforeEach(() => {
             room = new Room(10, 5);
         });
 
-        it('should return true for a valid position within the room', () => {
+        it("should return true for a valid position within the room", () => {
             expect(room.isValidPosition(3, 4)).toBe(true);
             expect(room.isValidPosition(0, 0)).toBe(true);
             expect(room.isValidPosition(10, 5)).toBe(true);
         });
 
-        it('should return false for a position outside the room boundaries', () => {
+        it("should return false for a position outside the room boundaries", () => {
             expect(room.isValidPosition(11, 4)).toBe(false);
             expect(room.isValidPosition(3, 6)).toBe(false);
             expect(room.isValidPosition(-1, 2)).toBe(false);
